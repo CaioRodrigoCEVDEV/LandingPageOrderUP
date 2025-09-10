@@ -2,27 +2,32 @@ name: Deploy via SSH (git pull + systemctl)
 
 on:
   push:
-    branches: [ "main" ]     # dispara a cada push na main
+    branches: [ "main" ]      # dispara a cada push na main
   workflow_dispatch:          # ou manualmente no Actions
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare SSH known_hosts
+      - name: (opcional) Checar código
+        uses: actions/checkout@v4
+
+      - name: Preparar SSH e known_hosts
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           ssh-keyscan -p "${{ secrets.SSH_PORT_MYSERVER }}" "${{ secrets.SSH_HOST_MYSERVER }}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
-      - name: Setup SSH key
+      - name: Instalar chave privada (corrige quebras de linha)
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY_MYSERVER }}" > ~/.ssh/id_rsa
+          printf "%s" "${{ secrets.SSH_PRIVATE_KEY_MYSERVER }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Run remote deploy scripts
+      - name: Executar deploy remoto
         run: |
-          ssh -p "${{ secrets.SSH_PORT_MYSERVER }}" "root@${{ secrets.SSH_HOST_MYSERVER }}" '
-            set -e
+          ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT_MYSERVER }}" root@"${{ secrets.SSH_HOST_MYSERVER }}" '
+            set -euo pipefail
             chmod +x /root/deployOrderUp.sh
             /root/deployOrderUp.sh
           '
