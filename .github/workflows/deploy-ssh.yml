@@ -2,31 +2,33 @@ name: Deploy via SSH (git pull + systemctl)
 
 on:
   push:
-    branches: [ "main" ]      # dispara a cada push na main
-  workflow_dispatch:          # ou manualmente no Actions
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: (opcional) Checar código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Preparar SSH e known_hosts
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
           ssh-keyscan -p "${{ secrets.SSH_PORT_MYSERVER }}" "${{ secrets.SSH_HOST_MYSERVER }}" >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Instalar chave privada (corrige quebras de linha)
+      - name: Instalar chave privada ed25519
         run: |
-          printf "%s" "${{ secrets.SSH_PRIVATE_KEY_MYSERVER }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          printf "%s" "${{ secrets.SSH_PRIVATE_KEY_MYSERVER }}" \
+            | sed 's/\r$//' \
+            | awk '{gsub(/\\n/,"\n")}1' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
       - name: Executar deploy remoto
         run: |
-          ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT_MYSERVER }}" root@"${{ secrets.SSH_HOST_MYSERVER }}" '
+          ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
+              -i ~/.ssh/id_ed25519 \
+              -p "${{ secrets.SSH_PORT_MYSERVER }}" root@"${{ secrets.SSH_HOST_MYSERVER }}" '
             set -euo pipefail
             chmod +x /root/deployOrderUp.sh
             /root/deployOrderUp.sh
