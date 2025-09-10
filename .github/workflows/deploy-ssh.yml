@@ -17,11 +17,11 @@ jobs:
           ssh-keyscan -p "${{ secrets.SSH_PORT_MYSERVER }}" "${{ secrets.SSH_HOST_MYSERVER }}" >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Restaurar chave privada a partir de base64
+      - name: Restaurar chave privada a partir de BASE64
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          # opcional: ver fingerprint (não vaza a chave)
+          # opcional: conferir fingerprint (só imprime, não vaza a chave)
           ssh-keygen -lf ~/.ssh/id_ed25519 || true
 
       - name: Executar deploy remoto
