@@ -12,16 +12,16 @@ jobs:
       - name: Prepare SSH known_hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -p "${{ secrets.SSH_PORT_MyServer }}" "${{ secrets.SSH_HOST_MyServer }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "${{ secrets.SSH_PORT_MYSERVER }}" "${{ secrets.SSH_HOST_MYSERVER }}" >> ~/.ssh/known_hosts
 
       - name: Setup SSH key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY_MyServer }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY_MYSERVER }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Run remote deploy scripts
         run: |
-          ssh -p "${{ secrets.SSH_PORT_MyServer }}" "root@${{ secrets.SSH_HOST_MyServer }}" '
+          ssh -p "${{ secrets.SSH_PORT_MYSERVER }}" "root@${{ secrets.SSH_HOST_MYSERVER }}" '
             set -e
             chmod +x /root/deployOrderUp.sh
             /root/deployOrderUp.sh
