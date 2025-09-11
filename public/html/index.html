@@ -28,7 +28,7 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "Sistema Pedidos",
+    "name": "OrderUp",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -83,7 +83,7 @@
         <div class="col-lg-6">
           <div class="card border-1 shadow-lg">
             <div class="ratio ratio-16x9">
-              <img src="../images/preview.png" class="object-fit-cover" alt="Preview do Sistema Pedidos" onerror="this.src='public/html/index.html'"/>
+              <img src="../images/preview.png" class="object-fit-cover" alt="Preview do OrderUp" onerror="this.src='public/html/index.html'"/>
             </div>
             <div class="card-body">
               <div class="d-flex justify-content-between">
@@ -435,20 +435,20 @@
     // Link dinâmico do WhatsApp com mensagem do formulário
     const btnZap = document.getElementById('btnZap');
     const leadForm = document.getElementById('leadForm');
-    const numeroWhats = '5561981697924'; // TODO: ajuste para o seu número
+    const numeroWhats = ''; // TODO: ajuste para o seu número
 
     function montarTexto(params){
       const nome = params.get('nome') || '';
       const whats = params.get('whats') || '';
       const empresa = params.get('empresa') || '';
       const msg = params.get('msg') || '';
-      return `Olá! Tenho interesse no Sistema Pedidos.\n\nNome: ${nome}\nWhatsApp: ${whats}\nEmpresa: ${empresa}\nMensagem: ${msg}`;
+      return `Olá! Tenho interesse no Sistema Pedidos OrderUp.\n\nNome: ${nome}\nWhatsApp: ${whats}\nEmpresa: ${empresa}\nMensagem: ${msg}`;
     }
 
     btnZap.addEventListener('click', () => {
       const base = `https://wa.me/${numeroWhats}`;
       const search = new URLSearchParams();
-      search.set('text', 'Olá! Quero saber mais sobre o Sistema Pedidos.');
+      search.set('text', 'Olá! Quero saber mais sobre o Sistema Pedidos OrderUp.');
       window.open(`${base}?${search.toString()}`, '_blank');
     });
 
