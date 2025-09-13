@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro - Sua Startup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .kpi-card {
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Estilos para o Modal */
+        #gemini-modal-content ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-top: 1rem;
+        }
+         #gemini-modal-content li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Dashboard Financeiro</h1>
+            <p class="text-gray-500">Controle total para sua startup de Micro-SaaS.</p>
+        </header>
+
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 kpi-card">
+                <h3 class="text-sm font-medium text-gray-500">Receita Mensal (MRR)</h3>
+                <p id="kpi-mrr" class="text-3xl font-bold text-green-600">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-6 kpi-card">
+                <h3 class="text-sm font-medium text-gray-500">Custo Mensal Total</h3>
+                <p id="kpi-custo-total" class="text-3xl font-bold text-red-600">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-6 kpi-card">
+                <h3 class="text-sm font-medium text-gray-500">Lucro/Prejuízo Mensal</h3>
+                <p id="kpi-lucro" class="text-3xl font-bold text-gray-800">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-6 kpi-card">
+                <h3 class="text-sm font-medium text-gray-500">Saldo de Caixa Atual</h3>
+                <p id="kpi-caixa" class="text-3xl font-bold text-blue-600">R$ 0,00</p>
+            </div>
+        </div>
+
+        <!-- Análise com IA -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-700">Análise Inteligente com Gemini</h2>
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">NOVO</span>
+            </div>
+            <p class="text-gray-500 mt-2 mb-4">Use o poder da IA para obter insights e sugestões sobre suas finanças.</p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="btn-analise-gemini" class="flex-1 w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                    ✨ Analisar Situação Atual
+                </button>
+                <button id="btn-otimizacao-gemini" class="flex-1 w-full bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-800 transition flex items-center justify-center gap-2">
+                    ✨ Otimizar Custos
+                </button>
+            </div>
+        </div>
+
+        <!-- Gráficos e Lançamentos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Receita vs. Custo Total (Últimos 12 meses)</h2>
+                <div class="chart-container">
+                    <canvas id="receitaVsCustoChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Novo Lançamento</h2>
+                <form id="form-lancamento" class="space-y-4">
+                    <input type="text" id="lancamento-descricao" placeholder="Descrição (Ex: Venda Personalizada)" class="w-full p-2 border rounded-md" required>
+                    <input type="number" id="lancamento-valor" placeholder="Valor (Ex: 1500.00)" step="0.01" class="w-full p-2 border rounded-md" required>
+                    <input type="date" id="lancamento-data" class="w-full p-2 border rounded-md" required>
+                    <select id="lancamento-tipo" class="w-full p-2 border rounded-md">
+                        <option value="receita">Receita Única</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                    <select id="lancamento-categoria" class="w-full p-2 border rounded-md">
+                        <option value="Serviço Personalizado">Serviço Personalizado</option>
+                        <option value="Infraestrutura">Infraestrutura</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Software">Software</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 transition">Adicionar Lançamento</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Fluxo de Caixa Mensal</h2>
+                <div class="chart-container">
+                    <canvas id="fluxoCaixaChart"></canvas>
+                </div>
+            </div>
+             <div class="bg-white p-6 rounded-lg shadow">
+                <h2 id="form-cliente-title" class="text-lg font-semibold text-gray-700 mb-4">Adicionar Cliente (SaaS)</h2>
+                <form id="form-cliente" class="space-y-4">
+                    <input type="hidden" id="cliente-id">
+                    <input type="text" id="cliente-nome" placeholder="Nome do Cliente" class="w-full p-2 border rounded-md" required>
+                    <input type="number" id="cliente-mensalidade" placeholder="Valor da Mensalidade" step="0.01" class="w-full p-2 border rounded-md" required>
+                    <input type="date" id="cliente-data-inicio" title="Data do primeiro pagamento" class="w-full p-2 border rounded-md" required>
+                    <button type="submit" id="btn-submit-cliente" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 transition">Adicionar Cliente</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Seção de Tabelas -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <!-- Tabela de Clientes -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Clientes Ativos e MRR</h2>
+                 <div class="max-h-96 overflow-y-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Cliente</th>
+                                <th scope="col" class="px-6 py-3">Mensalidade</th>
+                                <th scope="col" class="px-6 py-3">Próx. Venc.</th>
+                                <th scope="col" class="px-6 py-3">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-clientes-corpo">
+                            <!-- Linhas de clientes serão inseridas aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Tabela de Domínios -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                 <h2 id="form-dominio-title" class="text-lg font-semibold text-gray-700 mb-4">Custos com Domínios</h2>
+                 <form id="form-dominio" class="flex gap-2 mb-4 items-center">
+                    <input type="hidden" id="dominio-id">
+                    <input type="text" id="dominio-nome" placeholder="exemplo.com" class="flex-1 p-2 border rounded-md" required>
+                    <input type="number" id="dominio-valor" placeholder="Valor Anual" step="0.01" class="w-32 p-2 border rounded-md" required>
+                    <input type="date" id="dominio-data-compra" title="Data da Compra" class="p-2 border rounded-md" required>
+                    <button type="submit" id="btn-submit-dominio" class="bg-blue-600 text-white font-semibold py-2 px-3 rounded-md hover:bg-blue-700 transition">+</button>
+                </form>
+                <div class="max-h-80 overflow-y-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Domínio</th>
+                                <th scope="col" class="px-6 py-3">Custo Mensal</th>
+                                <th scope="col" class="px-6 py-3">Renovação</th>
+                                <th scope="col" class="px-6 py-3">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-dominios-corpo">
+                             <!-- Linhas de domínios serão inseridas aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+         <!-- Extrato de Lançamentos -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4">Extrato de Lançamentos</h2>
+            <!-- Filtros do Extrato -->
+            <div class="flex flex-wrap items-end gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex-grow">
+                    <label for="filtro-data-inicio" class="text-sm font-medium text-gray-700 block">De:</label>
+                    <input type="date" id="filtro-data-inicio" class="mt-1 w-full p-2 border rounded-md text-sm">
+                </div>
+                <div class="flex-grow">
+                    <label for="filtro-data-fim" class="text-sm font-medium text-gray-700 block">Até:</label>
+                    <input type="date" id="filtro-data-fim" class="mt-1 w-full p-2 border rounded-md text-sm">
+                </div>
+                <div class="flex-grow">
+                    <label for="filtro-categoria" class="text-sm font-medium text-gray-700 block">Categoria:</label>
+                    <select id="filtro-categoria" class="mt-1 w-full p-2 border rounded-md text-sm">
+                        <option value="">Todas</option>
+                        <option value="Serviço Personalizado">Serviço Personalizado</option>
+                        <option value="Infraestrutura">Infraestrutura</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Software">Software</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <button id="btn-limpar-filtros" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-600 transition text-sm">Limpar</button>
+            </div>
+            <div class="max-h-96 overflow-y-auto">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Data</th>
+                            <th scope="col" class="px-6 py-3">Descrição</th>
+                            <th scope="col" class="px-6 py-3">Categoria</th>
+                            <th scope="col" class="px-6 py-3">Valor</th>
+                            <th scope="col" class="px-6 py-3">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-lancamentos-corpo">
+                        <!-- Linhas de lançamentos serão inseridas aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gemini -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all">
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <h3 id="gemini-modal-title" class="text-xl font-bold text-gray-800">Análise Financeira</h3>
+                    <button id="gemini-modal-close-header" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                </div>
+                <div id="gemini-modal-body" class="mt-4 text-gray-600 max-w-none">
+                    <!-- Loader -->
+                    <div id="gemini-loader" class="flex flex-col items-center justify-center p-8">
+                        <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-4 text-gray-500">Processando com Gemini...</p>
+                    </div>
+                    <!-- Content -->
+                    <div id="gemini-modal-content" class="text-base leading-relaxed"></div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 rounded-b-lg text-right">
+                 <button id="gemini-modal-close-footer" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md hover:bg-gray-300 transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/index.js"></script>
+</body>
+</html>
