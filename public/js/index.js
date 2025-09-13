@@ -1,5 +1,5 @@
 // ===== Config =====
-const API = "http://caio.vps-kinghost.net:3003/";
+const API = "/api";
 
 // ===== Helpers =====
 const formatCurrency = (v) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
