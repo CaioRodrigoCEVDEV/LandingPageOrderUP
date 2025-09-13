@@ -31,6 +31,9 @@ app.get(["/", "/index"], (req, res) => {
 app.get("/login", (req, res) => {
   res.sendFile(path.join(ROOT, "public/html/login.html"));
 });
+app.get("/painel", (req, res) => {
+  res.sendFile(path.join(ROOT, "public/html/painel.html"));
+});
 app.get("/teste", (req, res) => res.json({ ok: true }));
 
 // 404
