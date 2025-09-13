@@ -1,5 +1,5 @@
 // ===== Config =====
-const API = "http://localhost:3003";
+const API = "http://orderup.com.br:3003";
 
 // ===== Helpers =====
 const formatCurrency = (v) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
