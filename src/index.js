@@ -9,7 +9,7 @@ const cors = require("cors");
 const ROOT = path.resolve(__dirname, "..");
 
 // carrega o .env da raiz
-require("dotenv").config({ path: path.join(ROOT, ".env") });
+require("dotenv").config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -25,6 +25,16 @@ app.use(express.static(path.join(ROOT, "public")));
 app.use("/public", express.static(path.join(ROOT, "public")));
 
 // rotas
+
+const clientesRoutes = require("./routes/clientesRoutes");
+app.use(clientesRoutes);
+
+const dominiosRoutes = require("./routes/dominiosRoutes");
+app.use(dominiosRoutes);
+
+const lancamentosRoutes = require("./routes/lancamentosRoutes");
+app.use(lancamentosRoutes);
+
 app.get(["/", "/index"], (req, res) => {
   res.sendFile(path.join(ROOT, "public/html/index.html"));
 });
