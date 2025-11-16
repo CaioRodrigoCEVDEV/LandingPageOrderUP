@@ -116,7 +116,7 @@ jobs:
             --arg ref "$REF" \
             --arg ts "$TIMESTAMP" \
             '{
-              username: "Landing OrderUp",
+              username: "Landing Page OrderUp",
               avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
               embeds: [
                 {
