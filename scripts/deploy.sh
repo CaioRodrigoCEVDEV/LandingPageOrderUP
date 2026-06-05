@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
 
 APP_DIR="${APP_DIR:-/home/sites/OrderUp/LandingPageOrderUP}"
 LANDING_DIR="$APP_DIR/client"
