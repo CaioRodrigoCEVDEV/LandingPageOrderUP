@@ -24,15 +24,14 @@ jobs:
           # opcional: conferir fingerprint (só imprime, não vaza a chave)
           ssh-keygen -lf ~/.ssh/id_ed25519 || true
 
-      - name: Executar deploy remoto
+      - name: Build da landing e deploy remoto
+        env:
+          APP_DIR: ${{ vars.APP_DIR || '/home/sites/OrderUp/LandingPageOrderUP' }}
         run: |
           ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
               -i ~/.ssh/id_ed25519 \
-              -p "${{ secrets.SSH_PORT_MYSERVER }}" root@"${{ secrets.SSH_HOST_MYSERVER }}" '
-            set -euo pipefail
-            chmod +x /root/deployOrderUp.sh
-            /root/deployOrderUp.sh
-          '
+              -p "${{ secrets.SSH_PORT_MYSERVER }}" root@"${{ secrets.SSH_HOST_MYSERVER }}" \
+              APP_DIR="$APP_DIR" bash -s < scripts/deploy.sh
 
   # ============================
   # NOTIFICAÇÃO PARA O DISCORD
