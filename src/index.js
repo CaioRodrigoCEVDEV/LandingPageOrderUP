@@ -24,6 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(ROOT, "public")));
 app.use("/public", express.static(path.join(ROOT, "public")));
 
+// build da landing React (Vite) - assets e SPA
+const clientDist = path.join(ROOT, "client", "dist");
+app.use(express.static(clientDist));
+
 // rotas
 
 const clientesRoutes = require("./routes/clientesRoutes");
@@ -35,9 +39,6 @@ app.use(dominiosRoutes);
 const lancamentosRoutes = require("./routes/lancamentosRoutes");
 app.use(lancamentosRoutes);
 
-app.get(["/", "/index"], (req, res) => {
-  res.sendFile(path.join(ROOT, "public/html/index.html"));
-});
 app.get("/login", (req, res) => {
   res.sendFile(path.join(ROOT, "public/html/login.html"));
 });
@@ -46,10 +47,22 @@ app.get("/painel", (req, res) => {
 });
 app.get("/teste", (req, res) => res.json({ ok: true }));
 
-// 404
+// Landing React: serve o index do build em / e em qualquer rota de SPA
+const clientIndex = path.join(clientDist, "index.html");
+const legacyIndex = path.join(ROOT, "public/html/index.html");
+app.get(["/", "/index"], (req, res) => {
+  if (fs.existsSync(clientIndex)) return res.sendFile(clientIndex);
+  if (fs.existsSync(legacyIndex)) return res.sendFile(legacyIndex);
+  res.status(503).send("Landing não construída. Rode: cd client && npm install && npm run build");
+});
+
+// 404: prioriza 404 do build React; depois fallback para SPA
 app.use((req, res) => {
-  const notFoundHtml = path.join(ROOT, "dist/404.html");
+  const notFoundHtml = path.join(clientDist, "404.html");
   if (fs.existsSync(notFoundHtml)) return res.status(404).sendFile(notFoundHtml);
+  if (fs.existsSync(clientIndex) && req.method === "GET" && req.accepts("html")) {
+    return res.status(200).sendFile(clientIndex);
+  }
   res.status(404).send("Not Found");
 });
 
