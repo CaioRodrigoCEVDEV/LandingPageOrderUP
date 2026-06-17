@@ -1,5 +1,5 @@
 import Icon from "./Icon.jsx";
-import { WHATSAPP_NUMBER } from "../data/content.js";
+import { WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../data/content.js";
 import { useReveal } from "../hooks/useReveal.js";
 
 export default function Hero() {
@@ -32,7 +32,7 @@ export default function Hero() {
           <div className="hero__actions">
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                "Olá! Quero solicitar um orçamento para um sistema sob medida."
+                WHATSAPP_MESSAGE
               )}`}
               target="_blank"
               rel="noopener noreferrer"

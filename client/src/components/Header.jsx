@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "./Icon.jsx";
-import { NAV_LINKS, WHATSAPP_NUMBER } from "../data/content.js";
+import { NAV_LINKS, WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../data/content.js";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -86,7 +86,7 @@ export default function Header() {
             ))}
           </ul>
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn--primary btn--sm site-nav__cta-mobile"
@@ -98,7 +98,7 @@ export default function Header() {
 
         <div className="site-header__actions">
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn--primary btn--sm site-header__cta"

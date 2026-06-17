@@ -1,5 +1,5 @@
 import Icon from "./Icon.jsx";
-import { WHATSAPP_NUMBER } from "../data/content.js";
+import { WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../data/content.js";
 import { useReveal } from "../hooks/useReveal.js";
 
 export default function CallToAction() {
@@ -20,7 +20,7 @@ export default function CallToAction() {
           </div>
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-              "Olá! Quero tirar minha ideia do papel com a OrderUp."
+              WHATSAPP_MESSAGE
             )}`}
             target="_blank"
             rel="noopener noreferrer"

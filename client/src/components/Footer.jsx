@@ -1,5 +1,5 @@
 import Icon from "./Icon.jsx";
-import { CONTACT_EMAIL, NAV_LINKS, WHATSAPP_NUMBER } from "../data/content.js";
+import { CONTACT_EMAIL, NAV_LINKS, WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../data/content.js";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -38,7 +38,7 @@ export default function Footer() {
           <ul className="site-footer__contact">
             <li>
               <a
-                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="site-footer__contact-link"

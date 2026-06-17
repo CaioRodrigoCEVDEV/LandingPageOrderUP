@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Icon from "./Icon.jsx";
-import { PROJECT_TYPES, WHATSAPP_NUMBER } from "../data/content.js";
+import { PROJECT_TYPES, WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../data/content.js";
 import { useReveal } from "../hooks/useReveal.js";
 
 const initialState = {
@@ -25,7 +25,7 @@ export default function ContactForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const lines = [
-      "Olá! Vim pelo site da OrderUp e gostaria de solicitar um orçamento.",
+      WHATSAPP_MESSAGE,
       "",
       `Nome: ${form.nome || "—"}`,
       `Empresa: ${form.empresa || "—"}`,
