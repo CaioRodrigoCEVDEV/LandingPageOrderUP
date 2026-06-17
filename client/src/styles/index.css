@@ -400,6 +400,14 @@ main {
   color: #f4f6ff;
 }
 
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .brand__mark {
   width: 36px;
   height: 36px;

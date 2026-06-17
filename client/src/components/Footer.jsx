@@ -8,9 +8,7 @@ export default function Footer() {
       <div className="container site-footer__inner">
         <div className="site-footer__brand">
           <a href="#inicio" className="brand brand--footer" aria-label="OrderUp — início">
-            <span className="brand__mark" aria-hidden="true">
-              <Icon name="spark" size={18} />
-            </span>
+            <img src="/images/logo-orderup.png" alt="" aria-hidden="true" className="brand-logo" />
             <span className="brand__text">
               <strong>OrderUp</strong>
               <small>Software House</small>
