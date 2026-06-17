@@ -1,4 +1,4 @@
-export const WHATSAPP_NUMBER = "5561981697924";
+export const WHATSAPP_NUMBER = "556183216765";
 export const WHATSAPP_MESSAGE = "Olá! Tenho interesse para marcar uma reunião para entender mais sobre as soluções que vocês oferecem!";
 export const CONTACT_EMAIL = "contato@orderup.com.br";
 
