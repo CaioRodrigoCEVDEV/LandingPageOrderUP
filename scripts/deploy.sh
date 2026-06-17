@@ -13,6 +13,18 @@ if [ ! -d "$LANDING_DIR" ]; then
   exit 1
 fi
 
+if [ ! -d "$APP_DIR/.git" ]; then
+  echo "ERRO: repositório git não encontrado em $APP_DIR" >&2
+  exit 1
+fi
+
+cd "$APP_DIR"
+
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+echo ">> Atualizando repositório ($CURRENT_BRANCH)"
+git fetch --all --prune
+git pull --ff-only origin "$CURRENT_BRANCH"
+
 cd "$LANDING_DIR"
 
 if [ -f package.json ]; then

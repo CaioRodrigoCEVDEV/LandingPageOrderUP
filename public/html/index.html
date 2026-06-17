@@ -395,20 +395,21 @@
     // Link dinâmico do WhatsApp com mensagem do formulário
     const btnZap = document.getElementById('btnZap');
     const leadForm = document.getElementById('leadForm');
-    const numeroWhats = ''; // TODO: ajuste para o seu número
+    const numeroWhats = '5561981697924';
+    const mensagemPadrao = 'Olá! Tenho interesse para marcar uma reunião para entender mais sobre as soluções que vocês oferecem!';
 
     function montarTexto(params) {
       const nome = params.get('nome') || '';
       const whats = params.get('whats') || '';
       const empresa = params.get('empresa') || '';
       const msg = params.get('msg') || '';
-      return `Olá! Tenho interesse no Sistema Pedidos OrderUp.\n\nNome: ${nome}\nWhatsApp: ${whats}\nEmpresa: ${empresa}\nMensagem: ${msg}`;
+      return `${mensagemPadrao}\n\nNome: ${nome}\nWhatsApp: ${whats}\nEmpresa: ${empresa}\nMensagem: ${msg}`;
     }
 
     btnZap.addEventListener('click', () => {
       const base = `https://wa.me/${numeroWhats}`;
       const search = new URLSearchParams();
-      search.set('text', 'Olá! Quero saber mais sobre o Sistema Pedidos OrderUp.');
+      search.set('text', mensagemPadrao);
       window.open(`${base}?${search.toString()}`, '_blank');
     });
 
