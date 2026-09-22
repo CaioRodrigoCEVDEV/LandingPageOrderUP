@@ -1,0 +1,1713 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OrderUp — Bot de Qualificação no WhatsApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: 225 44% 5%;
+        --foreground: 230 32% 93%;
+        --surface: 226 49% 8%;
+        --surface-hover: 225 40% 13%;
+        --border: 225 28% 17%;
+        --muted: 225 35% 13%;
+        --muted-foreground: 228 14% 62%;
+        --primary: 142 71% 45%;
+        --primary-hover: 142 76% 36%;
+        --primary-foreground: 144 65% 6%;
+        --primary-light: 142 45% 16%;
+        --accent: 189 90% 46%;
+        --accent-foreground: 225 44% 6%;
+        --success: 142 65% 45%;
+        --warning: 45 92% 52%;
+        --danger: 0 80% 62%;
+        --radius-sm: 8px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+        --radius-xl: 18px;
+        --brand-purple: #a855f7;
+        --brand-gradient: linear-gradient(
+          135deg,
+          hsl(var(--primary)) 0%,
+          hsl(var(--accent)) 60%,
+          #a855f7 100%
+        );
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        border-color: hsl(var(--border));
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-feature-settings: 'cv11', 'ss01';
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .mono {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+
+      .brand-gradient {
+        background-image: var(--brand-gradient);
+      }
+
+      .brand-gradient-text {
+        background-image: var(--brand-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* ---------- Background ---------- */
+      .bg-stage {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .bg-grid {
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+          linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+        background-size: 56px 56px;
+        mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 100%);
+        opacity: 0.5;
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.4;
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+
+      .orb-1 {
+        width: 620px;
+        height: 620px;
+        top: -220px;
+        left: -160px;
+        background: radial-gradient(circle, hsl(var(--primary) / 0.85), transparent 65%);
+      }
+
+      .orb-2 {
+        width: 560px;
+        height: 560px;
+        bottom: -240px;
+        right: -140px;
+        background: radial-gradient(circle, hsl(var(--accent) / 0.8), transparent 65%);
+        animation-delay: -6s;
+      }
+
+      .orb-3 {
+        width: 480px;
+        height: 480px;
+        top: 40%;
+        left: 55%;
+        background: radial-gradient(circle, var(--brand-purple), transparent 65%);
+        opacity: 0.25;
+        animation-delay: -11s;
+      }
+
+      @keyframes drift {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(40px, -30px, 0) scale(1.12);
+        }
+      }
+
+      /* ---------- Chrome ---------- */
+      .progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 0%;
+        z-index: 50;
+        background: var(--brand-gradient);
+        transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        box-shadow: 0 0 18px hsl(var(--primary) / 0.7);
+      }
+
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 28px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand img {
+        height: 30px;
+        width: auto;
+        filter: drop-shadow(0 4px 14px hsl(var(--primary) / 0.35));
+      }
+
+      .brand-name {
+        font-weight: 800;
+        font-size: 15px;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-name span {
+        font-weight: 400;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 13px;
+        border: 1px solid hsl(var(--border));
+        border-radius: 999px;
+        font-size: 12px;
+        color: hsl(var(--muted-foreground));
+        background: hsl(var(--surface) / 0.6);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .chip:hover {
+        color: hsl(var(--foreground));
+        border-color: hsl(var(--primary) / 0.5);
+      }
+
+      .chip.active {
+        color: hsl(var(--primary-foreground));
+        background: hsl(var(--primary));
+        border-color: transparent;
+      }
+
+      .chip-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: hsl(var(--primary));
+        box-shadow: 0 0 10px hsl(var(--primary));
+      }
+
+      /* ---------- Deck ---------- */
+      .deck {
+        position: relative;
+        z-index: 10;
+        height: 100%;
+        width: 100%;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 96px 64px 108px;
+      }
+
+      .slide.active {
+        display: flex;
+      }
+
+      .slide.dark::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 70% 60% at 50% 50%, hsl(var(--surface) / 0.55), transparent 70%);
+        z-index: -1;
+      }
+
+      .slide-inner {
+        width: min(1180px, 100%);
+        animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .slide.active .stagger > * {
+        animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .slide.active .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+      .slide.active .stagger > *:nth-child(2) { animation-delay: 0.12s; }
+      .slide.active .stagger > *:nth-child(3) { animation-delay: 0.19s; }
+      .slide.active .stagger > *:nth-child(4) { animation-delay: 0.26s; }
+      .slide.active .stagger > *:nth-child(5) { animation-delay: 0.33s; }
+      .slide.active .stagger > *:nth-child(6) { animation-delay: 0.4s; }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: hsl(var(--primary));
+        margin-bottom: 22px;
+      }
+
+      .eyebrow::before {
+        content: '';
+        width: 26px;
+        height: 2px;
+        background: var(--brand-gradient);
+        border-radius: 2px;
+      }
+
+      h1 {
+        font-size: clamp(40px, 6vw, 82px);
+        line-height: 1.02;
+        letter-spacing: -0.035em;
+        font-weight: 800;
+      }
+
+      h2 {
+        font-size: clamp(30px, 3.6vw, 50px);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        font-weight: 800;
+        margin-bottom: 18px;
+      }
+
+      h3 {
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .lead {
+        font-size: clamp(17px, 1.6vw, 21px);
+        line-height: 1.55;
+        color: hsl(var(--muted-foreground));
+        max-width: 720px;
+      }
+
+      .kicker {
+        font-size: 13px;
+        color: hsl(var(--muted-foreground));
+        letter-spacing: 0.02em;
+      }
+
+      /* ---------- Cards / grids ---------- */
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .g-2 { grid-template-columns: repeat(2, 1fr); }
+      .g-3 { grid-template-columns: repeat(3, 1fr); }
+      .g-4 { grid-template-columns: repeat(4, 1fr); }
+
+      .card {
+        position: relative;
+        background: hsl(var(--surface) / 0.72);
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius-lg);
+        padding: 22px;
+        backdrop-filter: blur(14px);
+        transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+        overflow: hidden;
+      }
+
+      .card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.5), transparent 45%);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.25s;
+        pointer-events: none;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: hsl(var(--primary) / 0.4);
+        box-shadow: 0 24px 48px -24px hsl(var(--primary) / 0.35);
+      }
+
+      .card:hover::after {
+        opacity: 1;
+      }
+
+      .icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-md);
+        display: grid;
+        place-items: center;
+        background: hsl(var(--primary) / 0.12);
+        color: hsl(var(--primary));
+        margin-bottom: 16px;
+      }
+
+      .icon svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      .icon.cyan {
+        background: hsl(var(--accent) / 0.14);
+        color: hsl(var(--accent));
+      }
+
+      .icon.purple {
+        background: rgb(168 85 247 / 0.16);
+        color: var(--brand-purple);
+      }
+
+      .card p {
+        font-size: 14px;
+        line-height: 1.55;
+        color: hsl(var(--muted-foreground));
+        margin-top: 8px;
+      }
+
+      ul.checks {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      ul.checks li {
+        display: flex;
+        gap: 10px;
+        font-size: 13.5px;
+        color: hsl(var(--muted-foreground));
+        line-height: 1.45;
+      }
+
+      ul.checks li::before {
+        content: '';
+        flex: none;
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        border-radius: 50%;
+        background: hsl(var(--primary) / 0.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 11px no-repeat;
+      }
+
+      /* ---------- Stat pills ---------- */
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 30px;
+      }
+
+      .stat {
+        padding: 14px 20px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius-md);
+        background: hsl(var(--surface) / 0.6);
+      }
+
+      .stat b {
+        display: block;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .stat span {
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* ---------- Flow ---------- */
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        margin-top: 26px;
+      }
+
+      .flow-step {
+        flex: 1;
+        background: hsl(var(--surface) / 0.7);
+        border: 1px solid hsl(var(--border));
+        padding: 20px 18px;
+        position: relative;
+      }
+
+      .flow-step:first-child {
+        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+      }
+
+      .flow-step:last-child {
+        border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+      }
+
+      .flow-step:not(:first-child) {
+        border-left: none;
+      }
+
+      .flow-num {
+        font-size: 12px;
+        color: hsl(var(--primary));
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: 0.1em;
+      }
+
+      .flow-step h4 {
+        font-size: 15px;
+        margin-bottom: 5px;
+      }
+
+      .flow-step p {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* ---------- Plans ---------- */
+      .plans {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 26px;
+        align-items: stretch;
+      }
+
+      .plan {
+        position: relative;
+        background: hsl(var(--surface) / 0.72);
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius-xl);
+        padding: 26px 24px;
+        display: flex;
+        flex-direction: column;
+        backdrop-filter: blur(14px);
+        transition: transform 0.25s, border-color 0.25s;
+      }
+
+      .plan:hover {
+        transform: translateY(-5px);
+      }
+
+      .plan.featured {
+        border-color: hsl(var(--primary) / 0.55);
+        background: linear-gradient(180deg, hsl(var(--primary) / 0.1), hsl(var(--surface) / 0.8) 40%);
+        box-shadow: 0 30px 70px -30px hsl(var(--primary) / 0.5);
+      }
+
+      .plan-tag {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 6px 14px;
+        border-radius: 999px;
+        color: hsl(var(--primary-foreground));
+        background: hsl(var(--primary));
+        white-space: nowrap;
+        box-shadow: 0 8px 24px -8px hsl(var(--primary) / 0.9);
+      }
+
+      .plan h3 {
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: hsl(var(--muted-foreground));
+        font-weight: 600;
+      }
+
+      .plan-price {
+        margin: 12px 0 4px;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .plan-price small {
+        font-size: 15px;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        letter-spacing: 0;
+      }
+
+      .plan-sub {
+        font-size: 12.5px;
+        color: hsl(var(--muted-foreground));
+        margin-bottom: 18px;
+      }
+
+      .plan ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        flex: 1;
+      }
+
+      .plan ul li {
+        display: flex;
+        gap: 9px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: hsl(var(--foreground) / 0.85);
+      }
+
+      .plan ul li.off {
+        color: hsl(var(--muted-foreground) / 0.7);
+      }
+
+      .plan ul li .tick,
+      .plan ul li .dash {
+        flex: none;
+        width: 17px;
+        text-align: center;
+        font-weight: 700;
+      }
+
+      .plan ul li .tick {
+        color: hsl(var(--primary));
+      }
+
+      .plan ul li .dash {
+        color: hsl(var(--muted-foreground) / 0.6);
+      }
+
+      .price-block {
+        margin: 16px 0 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .price-line {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed hsl(var(--border));
+      }
+
+      .price-line:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .price-label {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.11em;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .price-value {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        white-space: nowrap;
+      }
+
+      .price-value small {
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .price-value.monthly {
+        color: hsl(var(--primary));
+      }
+
+      /* ---------- Comparison matrix ---------- */
+      .matrix {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 20px;
+        font-size: 12px;
+      }
+
+      .matrix th,
+      .matrix td {
+        padding: 6px 12px;
+        text-align: center;
+        border-bottom: 1px solid hsl(var(--border));
+        line-height: 1.25;
+      }
+
+      .matrix thead th {
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: hsl(var(--muted-foreground));
+        padding-bottom: 12px;
+      }
+
+      .matrix thead th .star {
+        color: var(--brand-purple);
+      }
+
+      .matrix tbody td {
+        color: hsl(var(--muted-foreground));
+      }
+
+      .matrix th:first-child,
+      .matrix td:first-child {
+        text-align: left;
+        color: hsl(var(--foreground) / 0.85);
+        font-weight: 500;
+      }
+
+      .matrix .col-featured {
+        background: hsl(var(--primary) / 0.08);
+      }
+
+      .matrix thead .col-featured {
+        color: hsl(var(--primary));
+        border-top-left-radius: var(--radius-md);
+        border-top-right-radius: var(--radius-md);
+      }
+
+      .matrix tbody tr:last-child .col-featured {
+        border-bottom-left-radius: var(--radius-md);
+        border-bottom-right-radius: var(--radius-md);
+        border-bottom-color: transparent;
+      }
+
+      .matrix .row-price td {
+        font-weight: 700;
+        color: hsl(var(--foreground));
+        font-size: 13px;
+      }
+
+      .matrix .row-price td:first-child {
+        font-weight: 600;
+      }
+
+      .matrix .yes {
+        color: hsl(var(--primary));
+        font-weight: 700;
+      }
+
+      .matrix .no {
+        color: hsl(var(--muted-foreground) / 0.5);
+      }
+
+      .matrix .row-group td {
+        padding-top: 14px;
+        padding-bottom: 4px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: hsl(var(--primary));
+        border-bottom: none;
+        font-weight: 700;
+      }
+
+      /* ---------- Roadmap ---------- */
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        margin-top: 28px;
+        position: relative;
+      }
+
+      .tl-step {
+        padding: 0 18px;
+        position: relative;
+      }
+
+      .tl-marker {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: hsl(var(--surface));
+        border: 3px solid hsl(var(--primary));
+        margin-bottom: 16px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 0 0 6px hsl(var(--primary) / 0.12);
+      }
+
+      .tl-step.done .tl-marker {
+        background: hsl(var(--primary));
+      }
+
+      .tl-step::before {
+        content: '';
+        position: absolute;
+        top: 6px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: hsl(var(--border));
+      }
+
+      .tl-step.done::before {
+        background: hsl(var(--primary) / 0.6);
+      }
+
+      .tl-step:first-child::before {
+        left: 50%;
+      }
+
+      .tl-step:last-child::before {
+        right: 50%;
+      }
+
+      .tl-step h4 {
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+
+      .tl-step p {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .tl-badge {
+        display: inline-block;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        padding: 3px 8px;
+        border-radius: 999px;
+        margin-bottom: 8px;
+        border: 1px solid hsl(var(--border));
+        color: hsl(var(--muted-foreground));
+      }
+
+      .tl-badge.hot {
+        color: hsl(var(--primary-foreground));
+        background: hsl(var(--primary));
+        border-color: transparent;
+      }
+
+      /* ---------- Cover ---------- */
+      .cover-inner {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .cover-logo {
+        width: min(360px, 62vw);
+        margin-bottom: 34px;
+        filter: drop-shadow(0 20px 50px hsl(var(--primary) / 0.4));
+        animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      .cover-inner h1 {
+        margin-bottom: 20px;
+      }
+
+      .cover-inner .lead {
+        text-align: center;
+      }
+
+      .cover-tags {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 34px;
+      }
+
+      .tag {
+        padding: 8px 15px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--surface) / 0.6);
+        color: hsl(var(--foreground) / 0.85);
+      }
+
+      /* ---------- CTA ---------- */
+      .cta-panel {
+        margin-top: 30px;
+        padding: 30px;
+        border-radius: var(--radius-xl);
+        border: 1px solid hsl(var(--primary) / 0.4);
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.14), hsl(var(--accent) / 0.08));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 14px 26px;
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .btn-primary {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        box-shadow: 0 14px 34px -12px hsl(var(--primary) / 0.9);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 44px -14px hsl(var(--primary) / 0.95);
+      }
+
+      /* ---------- Footer / nav ---------- */
+      .navbar {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 45;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 9px 12px;
+        border-radius: 999px;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--surface) / 0.8);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 20px 40px -20px rgb(0 0 0 / 0.7);
+      }
+
+      .nav-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--surface-hover) / 0.8);
+        color: hsl(var(--foreground));
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: all 0.2s;
+      }
+
+      .nav-btn:hover {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        border-color: transparent;
+      }
+
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .counter {
+        font-size: 13px;
+        color: hsl(var(--muted-foreground));
+        min-width: 64px;
+        text-align: center;
+        letter-spacing: 0.04em;
+      }
+
+      .counter b {
+        color: hsl(var(--foreground));
+      }
+
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: hsl(var(--border));
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.25s;
+      }
+
+      .dot.active {
+        width: 20px;
+        border-radius: 999px;
+        background: var(--brand-gradient);
+      }
+
+      /* ---------- Presenter notes ---------- */
+      .notes {
+        display: none;
+      }
+
+      body.presenter .notes {
+        display: block;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        max-height: 32vh;
+        overflow: auto;
+        padding: 18px 28px;
+        background: hsl(225 44% 3% / 0.96);
+        border-top: 1px solid hsl(var(--primary) / 0.4);
+        backdrop-filter: blur(12px);
+      }
+
+      body.presenter .notes h5 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: hsl(var(--primary));
+        margin-bottom: 8px;
+      }
+
+      body.presenter .notes p,
+      body.presenter .notes li {
+        font-size: 13.5px;
+        line-height: 1.55;
+        color: hsl(var(--foreground) / 0.85);
+      }
+
+      body.presenter .notes ul {
+        padding-left: 18px;
+        margin-top: 4px;
+      }
+
+      body.presenter .slide {
+        padding-bottom: 32vh;
+      }
+
+      /* ---------- Print ---------- */
+      @media print {
+        @page {
+          size: 16in 9in;
+          margin: 0;
+        }
+
+        html,
+        body {
+          overflow: visible;
+          height: auto;
+          background: hsl(var(--background)) !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .bg-stage,
+        .topbar,
+        .navbar,
+        .progress,
+        .notes {
+          display: none !important;
+        }
+
+        .slide {
+          display: flex !important;
+          position: relative;
+          inset: auto;
+          height: 100vh;
+          page-break-after: always;
+          padding: 60px;
+        }
+
+        .slide-inner,
+        .cover-inner,
+        .stagger > * {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+
+        .slide:last-child {
+          page-break-after: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-stage" aria-hidden="true">
+      <div class="bg-grid"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="progress" id="progress"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <img src="/html/logo-orderup.png" alt="OrderUp" />
+        <div class="brand-name">OrderUp <span>CRM</span></div>
+      </div>
+      <div class="top-actions">
+        <button class="chip" id="presenter-btn" title="Mostrar/ocultar roteiro do apresentador (N)">
+          <span class="chip-dot"></span> Modo apresentador
+        </button>
+      </div>
+    </header>
+
+        <main class="deck" id="deck">
+      <!-- 1. CAPA -->
+      <section class="slide active">
+        <div class="slide-inner cover-inner">
+          <img class="cover-logo" src="/html/logo-orderup.png" alt="OrderUp CRM" />
+          <div class="eyebrow" style="justify-content: center">Proposta exclusiva</div>
+          <h1>
+            Seu WhatsApp atende e<br />
+            <span class="brand-gradient-text">qualifica sozinho</span>
+          </h1>
+          <p class="lead">
+            Um bot que recebe os leads, faz a triagem completa e envia o resumo dos qualificados
+            direto no seu WhatsApp — no intervalo que você definir. Sem contratar ninguém e sem
+            perder mais nenhum contato.
+          </p>
+          <div class="cover-tags">
+            <span class="tag">Atendimento 24/7</span>
+            <span class="tag">Triagem automática</span>
+            <span class="tag">Só leads qualificados</span>
+            <span class="tag">Resumo no WhatsApp</span>
+            <span class="tag">Envio periódico</span>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Capa</h5>
+          <p>
+            Compromisso da reunião: mostrar como o WhatsApp dele passa a atender, qualificar e
+            entregar só o lead bom — sem aumentar equipe. Personalize citando o nome do cliente e o
+            volume de mensagens que ele mencionou.
+          </p>
+        </aside>
+      </section>
+
+      <!-- 2. O CUSTO DE ATENDER TUDO NA MÃO -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">O cenário hoje</div>
+          <h2>Atender todo mundo na mão<br /><span class="brand-gradient-text">custa caro e esconde o ouro</span></h2>
+          <p class="lead">
+            Todos os leads chegam no WhatsApp — e é justamente ali que eles se perdem, se misturam e
+            consomem o tempo de quem deveria estar vendendo.
+          </p>
+          <div class="grid g-4" style="margin-top: 34px">
+            <div class="card">
+              <div class="icon" style="background: hsl(var(--danger)/0.12); color: hsl(var(--danger))">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              </div>
+              <h3>Demora para responder</h3>
+              <p>Quem responde primeiro fecha mais. Cada minuto de espera esfria o interesse.</p>
+            </div>
+            <div class="card">
+              <div class="icon" style="background: hsl(var(--warning)/0.14); color: hsl(var(--warning))">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-6 6c0 4-2 5-2 5h16s-2-1-2-5a6 6 0 0 0-6-6"/><path d="M10 21h4"/></svg>
+              </div>
+              <h3>Fora do horário</h3>
+              <p>Leads que chegam à noite, no fim de semana ou no feriado ficam sem resposta.</p>
+            </div>
+            <div class="card">
+              <div class="icon" style="background: hsl(var(--accent)/0.14); color: hsl(var(--accent))">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h12"/></svg>
+              </div>
+              <h3>Tempo com quem não compra</h3>
+              <p>A equipe gasta horas com curiosos e contatos fora do perfil comercial.</p>
+            </div>
+            <div class="card">
+              <div class="icon" style="background: rgb(168 85 247 / 0.16); color: var(--brand-purple)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+              <h3>Sem saber quem é bom</h3>
+              <p>Sem triagem, todo lead parece igual — e o qualificado se perde no meio.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Problema</h5>
+          <ul>
+            <li>Pergunte: quantas mensagens por dia? Quem responde? O que acontece fora do horário?</li>
+            <li>Pergunte: de cada 10 que chegam, quantos são realmente bons? Quanto tempo se gasta com o resto?</li>
+            <li>Não apresente solução ainda — faça-o sentir o vazamento.</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- 3. A VIRADA -->
+      <section class="slide">
+        <div class="slide-inner" style="text-align: center">
+          <div class="eyebrow" style="justify-content: center">A proposta</div>
+          <h1 style="font-size: clamp(30px, 4.4vw, 58px)">
+            Enquanto você trabalha, o bot<br />
+            <span class="brand-gradient-text">atende, qualifica e resume</span>
+          </h1>
+          <p class="lead" style="margin: 22px auto 0; text-align: center">
+            Ele conversa com cada lead no seu WhatsApp, aplica os seus critérios, descarta o que não
+            serve e te entrega só o que importa — com um resumo pronto.
+          </p>
+          <div class="flow" style="max-width: 900px; margin: 40px auto 0">
+            <div class="flow-step">
+              <div class="flow-num mono">01</div>
+              <h4>Recebe</h4>
+              <p>Responde na hora, 24/7, com a voz da sua empresa.</p>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num mono">02</div>
+              <h4>Qualifica</h4>
+              <p>Faz as perguntas e aplica score e critérios.</p>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num mono">03</div>
+              <h4>Entrega</h4>
+              <p>Envia o resumo do lead bom no seu WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — A virada</h5>
+          <p>
+            Frase de impacto: "você para de ser o gargalo do WhatsApp". Este é o slide que resume
+            tudo — os próximos só provam que funciona.
+          </p>
+        </aside>
+      </section>
+
+      <!-- 4. COMO FUNCIONA -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Como funciona</div>
+          <h2>Do "oi" ao lead qualificado,<br />sem ninguém tocar no celular</h2>
+          <div class="flow" style="margin-top: 30px">
+            <div class="flow-step">
+              <div class="flow-num mono">01 — RECEBE</div>
+              <h4>Lead chama no WhatsApp</h4>
+              <p>O bot assume a conversa em segundos e conduz com naturalidade.</p>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num mono">02 — TRIAGEM</div>
+              <h4>Perguntas configuráveis</h4>
+              <p>Ele coleta exatamente as informações que você definiu.</p>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num mono">03 — AVALIA</div>
+              <h4>Score e critérios</h4>
+              <p>Classifica em qualificado ou não, com base no seu perfil ideal.</p>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num mono">04 — FILTRA</div>
+              <h4>Só o qualificado vira lead</h4>
+              <p>Os demais recebem resposta educada com o motivo — sem queimar o contato.</p>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num mono">05 — ENTREGA</div>
+              <h4>Resumo no seu WhatsApp</h4>
+              <p>Você recebe o lead pronto para o fechamento, no período que escolher.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Como funciona</h5>
+          <p>
+            Percorra as 5 etapas devagar. Reforce a etapa 4: o bot não deixa o lead ruim sem
+            resposta — ele encerra bem e com motivo. Isso evita desgaste e protege a marca.
+          </p>
+        </aside>
+      </section>
+
+      <!-- 5. O QUE O BOT FAZ -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Capacidades</div>
+          <h2>Tudo o que o bot faz por você</h2>
+          <div class="grid g-3" style="margin-top: 32px">
+            <div class="card">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              </div>
+              <h3>Atendimento 24/7</h3>
+              <p>Nenhum lead fica sem resposta, a qualquer hora ou dia.</p>
+            </div>
+            <div class="card">
+              <div class="icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h3>Triagem personalizada</h3>
+              <p>Perguntas definidas por você, no seu contexto e tom de voz.</p>
+            </div>
+            <div class="card">
+              <div class="icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              </div>
+              <h3>Score + qualificação</h3>
+              <p>Cada lead recebe uma nota e um veredito objetivo.</p>
+            </div>
+            <div class="card">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <h3>Só leads qualificados</h3>
+              <p>O funil fica limpo: o time só olha o que tem chance real.</p>
+            </div>
+            <div class="card">
+              <div class="icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg>
+              </div>
+              <h3>Resumo do lead</h3>
+              <p>Interesse, dados coletados e próxima ação em poucas linhas.</p>
+            </div>
+            <div class="card">
+              <div class="icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2"/><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4"/></svg>
+              </div>
+              <h3>Envio periódico</h3>
+              <p>Resumo dos leads qualificados no intervalo que você definir.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Capacidades</h5>
+          <p>
+            Escolha os 3 recursos mais alinhados à dor dele. Se ele citou "perco lead fora do
+            horário", pare em Atendimento 24/7 e Envio periódico.
+          </p>
+        </aside>
+      </section>
+
+      <!-- 6. CONFIGURÁVEL -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Você no controle</div>
+          <h2>Configurável do seu jeito:<br /><span class="brand-gradient-text">você define o que é lead bom</span></h2>
+          <div class="grid g-2" style="margin-top: 28px; align-items: center">
+            <ul class="checks">
+              <li><b>Perguntas</b>&nbsp;— o roteiro de triagem que faz sentido para o seu negócio.</li>
+              <li><b>Critérios e score</b>&nbsp;— o que aprova e o que reprova um lead.</li>
+              <li><b>Mensagens</b>&nbsp;— o tom de voz da sua empresa, do primeiro "oi" ao encerramento.</li>
+              <li><b>Horários e frequência</b>&nbsp;— quando o bot atua e quando você recebe os resumos.</li>
+              <li><b>Handoff humano</b>&nbsp;— casos específicos saem do bot e vão direto para uma pessoa.</li>
+            </ul>
+            <div class="card" style="padding: 22px">
+              <div class="kicker mono" style="margin-bottom: 14px">painel do bot · configuração</div>
+              <div style="display: flex; flex-direction: column; gap: 10px">
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: hsl(var(--surface-hover)); border-radius: var(--radius-md)">
+                  <span style="font-size: 13px">Perfil desejado</span><span class="tag" style="font-size: 11px">alto padrão</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: hsl(var(--surface-hover)); border-radius: var(--radius-md)">
+                  <span style="font-size: 13px">Perguntas de triagem</span><span class="tag" style="font-size: 11px">5 definidas</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: hsl(var(--surface-hover)); border-radius: var(--radius-md)">
+                  <span style="font-size: 13px">Envio do resumo</span><span class="tag" style="border-color: hsl(var(--primary)/.5); color: hsl(var(--primary)); font-size: 11px">a cada 2 horas</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: hsl(var(--primary)/0.1); border: 1px solid hsl(var(--primary)/0.35); border-radius: var(--radius-md)">
+                  <span style="font-size: 13px">Notificar humano quando</span><span class="tag" style="font-size: 11px">score ≥ 80</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Configurável</h5>
+          <p>
+            Aqui você mostra que não é um robô engessado: as regras são dele. Pergunte: "quais
+            informações vocês precisam saber antes de falar com um lead?" — a resposta vira o roteiro.
+          </p>
+        </aside>
+      </section>
+
+      <!-- 7. O RESUMO NO WHATSAPP -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Entrega</div>
+          <h2>O resumo chega pronto,<br />no seu próprio WhatsApp</h2>
+          <div class="grid g-2" style="margin-top: 28px; align-items: center">
+            <div>
+              <ul class="checks">
+                <li><b>Quem é</b>&nbsp;— nome e forma de contato.</li>
+                <li><b>O que quer</b>&nbsp;— necessidade e interesse resumidos.</li>
+                <li><b>Quão bom é</b>&nbsp;— score e classificação.</li>
+                <li><b>Próxima ação</b>&nbsp;— o passo sugerido para fechar.</li>
+              </ul>
+              <p class="kicker" style="margin-top: 18px">
+                Nada de abrir sistema, planilha ou procurar conversa antiga.
+              </p>
+            </div>
+            <div class="card" style="padding: 16px; background: linear-gradient(160deg, hsl(var(--primary)/0.08), hsl(var(--surface)/0.85))">
+              <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid hsl(var(--border))">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: hsl(var(--primary)/0.18); display: grid; place-items: center; color: hsl(var(--primary))">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M9 12h.01M15 12h.01"/></svg>
+                </div>
+                <div><div style="font-size: 13px; font-weight: 600">OrderUp Bot</div><div class="kicker" style="font-size: 11px">resumo de lead qualificado</div></div>
+              </div>
+              <div style="margin-top: 14px; background: hsl(142 60% 92% / 0.95); color: #0b2016; border-radius: 12px; border-top-left-radius: 3px; padding: 14px; font-size: 13px; line-height: 1.55">
+                <b>🔥 Novo lead qualificado</b><br />
+                <b>Nome:</b> [Lead]<br />
+                <b>Interesse:</b> [necessidade]<br />
+                <b>Score:</b> 86/100<br />
+                <b>Resumo:</b> urgência alta e perfil compatível.<br />
+                <b>Próxima ação:</b> enviar proposta hoje.
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — O resumo</h5>
+          <p>
+            Mostre a mensagem como ela chega. Destaque que ele recebe a informação mastigada, sem
+            abrir nada — e pergunta: "hoje você recebe isso de algum lead?".
+          </p>
+        </aside>
+      </section>
+
+      <!-- 8. ENVIO NO PERÍODO DEFINIDO -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Na sua rotina</div>
+          <h2>Você escolhe quando receber:<br /><span class="brand-gradient-text">a cada hora, diário ou semanal</span></h2>
+          <div class="grid g-3" style="margin-top: 30px">
+            <div class="card">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              </div>
+              <h3>Quase em tempo real</h3>
+              <p>Resumo imediato a cada lead qualificado para quem vende no impulso.</p>
+            </div>
+            <div class="card">
+              <div class="icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4"/><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18"/></svg>
+              </div>
+              <h3>Resumo diário</h3>
+              <p>Um compilado por dia, no horário que você definir — manhã ou fim do expediente.</p>
+            </div>
+            <div class="card">
+              <div class="icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              </div>
+              <h3>Consolidado semanal</h3>
+              <p>Visão de conjunto para planejar a semana com os melhores leads.</p>
+            </div>
+          </div>
+          <div class="cta-panel" style="margin-top: 26px">
+            <div>
+              <h3 style="margin-bottom: 4px">Um lead bom avisado na hora certa vale mais que dez esquecidos</h3>
+              <p class="kicker">A frequência é configurável e pode mudar quando você quiser.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Envio periódico</h5>
+          <p>
+            Descubra a rotina dele: prefere tempo real ou resumo diário? Ajuste a recomendação e
+            mostre que a frequência é flexível, sem custo extra.
+          </p>
+        </aside>
+      </section>
+
+      <!-- 9. ANTES X DEPOIS -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">O impacto</div>
+          <h2 style="margin-bottom: 0">Antes e depois do bot</h2>
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Hoje</th>
+                <th class="col-featured">Com o OrderUp</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Tempo de resposta</td><td>minutos ou horas</td><td class="col-featured">segundos, 24/7</td></tr>
+              <tr><td>Fora do horário</td><td>lead esperando</td><td class="col-featured">atendido na hora</td></tr>
+              <tr><td>Triagem</td><td>manual e inconsistente</td><td class="col-featured">automática e padronizada</td></tr>
+              <tr><td>Quem o time atende</td><td>todos, inclusive curiosos</td><td class="col-featured">só qualificados</td></tr>
+              <tr><td>Visão do lead</td><td>conversa solta no celular</td><td class="col-featured">resumo com score e ação</td></tr>
+              <tr><td>Follow-up</td><td>depende da memória</td><td class="col-featured">resumo periódico no WhatsApp</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Antes x Depois</h5>
+          <p>
+            Este slide vende sozinho. Leia a coluna "Hoje" devagar e deixe o silêncio pesar antes de
+            mostrar a coluna "Com o OrderUp".
+          </p>
+        </aside>
+      </section>
+
+      <!-- 10. SEGURANÇA E CONTROLE HUMANO -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Confiança</div>
+          <h2>Automação com <span class="brand-gradient-text">controle humano</span></h2>
+          <div class="grid g-4" style="margin-top: 34px">
+            <div class="card">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3>Dados protegidos</h3>
+              <p>Conexão segura, credenciais criptografadas e isolamento por empresa.</p>
+            </div>
+            <div class="card">
+              <div class="icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+              <h3>Revisão humana</h3>
+              <p>A IA triagem e sugere; a decisão final é sempre de uma pessoa.</p>
+            </div>
+            <div class="card">
+              <div class="icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <h3>LGPD</h3>
+              <p>Aviso de privacidade ao lead, retenção controlada e direitos do titular.</p>
+            </div>
+            <div class="card">
+              <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+              </div>
+              <h3>Sem sequestrar a conversa</h3>
+              <p>Quando o caso pede, o bot passa a conversa para um humano na hora.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Segurança e controle</h5>
+          <p>
+            Desarme o medo do robô: o bot nunca fala besteira sobre preço nem fecha nada sozinho.
+            Ele qualifica e entrega. Mencione também o aviso de privacidade ao lead (LGPD).
+          </p>
+        </aside>
+      </section>
+
+      <!-- 11. INVESTIMENTO -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Investimento</div>
+          <h2>Uma solução sob medida,<br />um único valor</h2>
+          <div style="display: flex; justify-content: center; margin-top: 30px">
+            <div class="plan featured" style="max-width: 540px; width: 100%">
+              <span class="plan-tag">Proposta exclusiva</span>
+              <h3>Bot de qualificação no WhatsApp</h3>
+              <div class="price-block" style="margin-top: 18px">
+                <div class="price-line">
+                  <span class="price-label">Implantação (única)</span>
+                  <span class="price-value">R$ 5.000</span>
+                </div>
+                <div class="price-line">
+                  <span class="price-label">Mensalidade</span>
+                  <span class="price-value monthly">R$ 1.000<small>/mês</small></span>
+                </div>
+              </div>
+              <ul>
+                <li><span class="tick">✓</span> Configuração completa do bot e do roteiro de triagem</li>
+                <li><span class="tick">✓</span> Conexão do seu WhatsApp (API)</li>
+                <li><span class="tick">✓</span> Score, qualificação e filtro de leads</li>
+                <li><span class="tick">✓</span> Resumo do lead no seu WhatsApp</li>
+                <li><span class="tick">✓</span> Envio periódico configurável</li>
+                <li><span class="tick">✓</span> Treinamento e suporte contínuo</li>
+              </ul>
+            </div>
+          </div>
+          <p class="kicker" style="margin-top: 20px; text-align: center">
+            Implantação paga uma única vez · mensalidade recorrente. Números adicionais e volume extra sob consulta.
+          </p>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Investimento</h5>
+          <ul>
+            <li>Ancoragem: R$ 1.000/mês equivale a menos de <b>R$ 34 por dia</b> — menos que um lead perdido.</li>
+            <li>Não justifique o preço; traduza em retorno com o volume de leads dele.</li>
+            <li>Pergunta de fechamento: "podemos começar a configuração esta semana?".</li>
+          </ul>
+        </aside>
+      </section>
+
+      <!-- 12. IMPLANTAÇÃO E PRÓXIMOS PASSOS -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">Próximos passos</div>
+          <h2>No ar em poucas semanas</h2>
+          <div class="timeline">
+            <div class="tl-step done">
+              <div class="tl-marker"></div>
+              <span class="tl-badge hot">Semana 1</span>
+              <h4>Kickoff e configuração</h4>
+              <p>Definimos as perguntas, os critérios e o tom de voz do bot.</p>
+            </div>
+            <div class="tl-step">
+              <div class="tl-marker"></div>
+              <span class="tl-badge">Semana 2</span>
+              <h4>Conexão do WhatsApp</h4>
+              <p>Número conectado e roteiro de triagem ajustado.</p>
+            </div>
+            <div class="tl-step">
+              <div class="tl-marker"></div>
+              <span class="tl-badge">Semana 3</span>
+              <h4>Testes com leads reais</h4>
+              <p>Ajustes finos de qualificação e do resumo enviado.</p>
+            </div>
+            <div class="tl-step">
+              <div class="tl-marker"></div>
+              <span class="tl-badge hot">Semana 4</span>
+              <h4>Go-live</h4>
+              <p>O bot assume o atendimento e você recebe os leads qualificados.</p>
+            </div>
+          </div>
+          <div class="cta-panel" style="margin-top: 28px">
+            <div>
+              <h3 style="margin-bottom: 4px">Pronto para parar de perder lead no WhatsApp?</h3>
+              <p class="kicker">Aprovando a proposta, iniciamos a configuração imediatamente.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          <h5>Roteiro — Fechamento</h5>
+          <p>
+            Combine o kickoff na própria reunião: dia e hora. Quem participa e qual número será
+            conectado. Sair com data marcada é o objetivo.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <nav class="navbar">
+      <button class="nav-btn" id="prev" aria-label="Slide anterior">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="dots" id="dots"></div>
+      <div class="counter"><b id="cur">1</b> / <span id="total">12</span></div>
+      <button class="nav-btn" id="next" aria-label="Próximo slide">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </nav>
+
+    <script>
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const dotsWrap = document.getElementById('dots');
+      const progress = document.getElementById('progress');
+      const curEl = document.getElementById('cur');
+      const totalEl = document.getElementById('total');
+      const prevBtn = document.getElementById('prev');
+      const nextBtn = document.getElementById('next');
+      const presenterBtn = document.getElementById('presenter-btn');
+
+      let index = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1), 10) - 1 || 0));
+
+      totalEl.textContent = slides.length;
+
+      slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'dot';
+        dot.setAttribute('aria-label', 'Ir para o slide ' + (i + 1));
+        dot.addEventListener('click', () => go(i));
+        dotsWrap.appendChild(dot);
+      });
+
+      const dots = Array.from(dotsWrap.children);
+
+      function go(n) {
+        index = Math.max(0, Math.min(slides.length - 1, n));
+        slides.forEach((s, i) => s.classList.toggle('active', i === index));
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        curEl.textContent = index + 1;
+        progress.style.width = ((index + 1) / slides.length) * 100 + '%';
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === slides.length - 1;
+        history.replaceState(null, '', '#' + (index + 1));
+      }
+
+      prevBtn.addEventListener('click', () => go(index - 1));
+      nextBtn.addEventListener('click', () => go(index + 1));
+      presenterBtn.addEventListener('click', () => {
+        document.body.classList.toggle('presenter');
+        presenterBtn.classList.toggle('active');
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) {
+          e.preventDefault();
+          go(index + 1);
+        } else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) {
+          e.preventDefault();
+          go(index - 1);
+        } else if (e.key === 'Home') {
+          go(0);
+        } else if (e.key === 'End') {
+          go(slides.length - 1);
+        } else if (e.key.toLowerCase() === 'n') {
+          document.body.classList.toggle('presenter');
+          presenterBtn.classList.toggle('active');
+        }
+      });
+
+      go(index);
+    </script>
+  </body>
+</html>

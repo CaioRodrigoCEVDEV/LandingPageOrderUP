@@ -45,6 +45,9 @@ app.get("/login", (req, res) => {
 app.get("/painel", (req, res) => {
   res.sendFile(path.join(ROOT, "public/html/painel.html"));
 });
+app.get("/apresentacao", (req, res) => {
+  res.sendFile(path.join(ROOT, "public/html/apresentacao.html"));
+});
 app.get("/teste", (req, res) => res.json({ ok: true }));
 
 // Landing React: serve o index do build em / e em qualquer rota de SPA
