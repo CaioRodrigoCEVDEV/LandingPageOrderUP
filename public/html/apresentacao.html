@@ -1043,6 +1043,280 @@
         padding-bottom: 32vh;
       }
 
+      /* ---------- Responsive ---------- */
+      @media (max-width: 1024px) {
+        .slide {
+          padding: 92px 32px 116px;
+        }
+
+        .g-4 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .g-3 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .timeline {
+          grid-template-columns: repeat(2, 1fr);
+          row-gap: 36px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar {
+          padding: 12px 16px;
+        }
+
+        .brand img {
+          height: 24px;
+        }
+
+        .brand-name {
+          font-size: 13px;
+        }
+
+        .top-actions {
+          gap: 8px;
+        }
+
+        .chip {
+          padding: 6px 11px;
+          font-size: 11px;
+        }
+
+        .slide {
+          justify-content: flex-start;
+          align-items: stretch;
+          padding: 78px 18px 104px;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .slide-inner {
+          width: 100%;
+        }
+
+        h1 {
+          font-size: clamp(30px, 9vw, 44px);
+        }
+
+        h2 {
+          font-size: clamp(24px, 7.4vw, 34px);
+          margin-bottom: 14px;
+        }
+
+        .lead {
+          font-size: 15px;
+        }
+
+        .eyebrow {
+          margin-bottom: 16px;
+        }
+
+        .grid {
+          gap: 12px;
+        }
+
+        .g-2,
+        .g-3,
+        .g-4 {
+          grid-template-columns: 1fr;
+        }
+
+        .card {
+          padding: 18px;
+        }
+
+        .icon {
+          width: 38px;
+          height: 38px;
+          margin-bottom: 12px;
+        }
+
+        .stats {
+          margin-top: 22px;
+        }
+
+        .stat {
+          flex: 1 1 40%;
+        }
+
+        .flow {
+          flex-direction: column;
+        }
+
+        .flow-step {
+          padding: 16px;
+        }
+
+        .flow-step:first-child {
+          border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .flow-step:last-child {
+          border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
+        .flow-step:not(:first-child) {
+          border-left: 1px solid hsl(var(--border));
+          border-top: none;
+        }
+
+        .plans {
+          grid-template-columns: 1fr;
+          gap: 26px;
+        }
+
+        .timeline {
+          grid-template-columns: 1fr;
+          row-gap: 0;
+          margin-left: 4px;
+        }
+
+        .tl-step {
+          padding: 0 0 26px 28px;
+        }
+
+        .tl-step::before {
+          top: 3px;
+          bottom: 0;
+          left: 6px;
+          right: auto;
+          width: 2px;
+          height: auto;
+        }
+
+        .tl-step:first-child::before {
+          left: 6px;
+        }
+
+        .tl-step:last-child {
+          padding-bottom: 0;
+        }
+
+        .tl-step:last-child::before {
+          display: none;
+        }
+
+        .tl-marker {
+          position: absolute;
+          left: 0;
+          top: 3px;
+          margin-bottom: 0;
+        }
+
+        .tl-step h4 {
+          margin-top: 6px;
+        }
+
+        .matrix {
+          font-size: 10.5px;
+        }
+
+        .matrix th,
+        .matrix td {
+          padding: 5px;
+        }
+
+        .matrix thead th {
+          font-size: 10px;
+        }
+
+        .matrix .row-price td {
+          font-size: 12px;
+        }
+
+        .cta-panel {
+          padding: 20px;
+          gap: 16px;
+          margin-top: 24px;
+        }
+
+        .cover-logo {
+          width: min(300px, 70vw);
+          margin-bottom: 26px;
+        }
+
+        .cover-tags {
+          margin-top: 26px;
+          gap: 8px;
+        }
+
+        .tag {
+          padding: 7px 12px;
+          font-size: 11.5px;
+        }
+
+        .plan-price {
+          font-size: 34px;
+        }
+
+        .price-value {
+          font-size: 21px;
+        }
+
+        .navbar {
+          bottom: 14px;
+          gap: 10px;
+          padding: 8px 10px;
+          max-width: calc(100vw - 24px);
+        }
+
+        .nav-btn {
+          width: 34px;
+          height: 34px;
+          flex: none;
+        }
+
+        .counter {
+          font-size: 12px;
+          min-width: 50px;
+        }
+
+        .dots {
+          gap: 4px;
+        }
+
+        .dot {
+          width: 6px;
+          height: 6px;
+        }
+
+        .dot.active {
+          width: 14px;
+        }
+
+        body.presenter .notes {
+          max-height: 42vh;
+          padding: 14px 18px;
+        }
+
+        body.presenter .slide {
+          padding-bottom: 44vh;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .slide {
+          padding: 74px 14px 100px;
+        }
+
+        .brand-name span {
+          display: none;
+        }
+
+        .matrix {
+          font-size: 10px;
+        }
+
+        .matrix th,
+        .matrix td {
+          padding: 4px;
+        }
+      }
+
       /* ---------- Print ---------- */
       @media print {
         @page {
@@ -1657,6 +1931,7 @@
       const prevBtn = document.getElementById('prev');
       const nextBtn = document.getElementById('next');
       const presenterBtn = document.getElementById('presenter-btn');
+      const deck = document.getElementById('deck');
 
       let index = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1), 10) - 1 || 0));
 
@@ -1689,6 +1964,22 @@
         document.body.classList.toggle('presenter');
         presenterBtn.classList.toggle('active');
       });
+
+      let touchX = 0;
+      let touchY = 0;
+      deck.addEventListener('touchstart', (e) => {
+        const t = e.changedTouches[0];
+        touchX = t.clientX;
+        touchY = t.clientY;
+      }, { passive: true });
+      deck.addEventListener('touchend', (e) => {
+        const t = e.changedTouches[0];
+        const dx = t.clientX - touchX;
+        const dy = t.clientY - touchY;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+          go(index + (dx < 0 ? 1 : -1));
+        }
+      }, { passive: true });
 
       document.addEventListener('keydown', (e) => {
         if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) {
