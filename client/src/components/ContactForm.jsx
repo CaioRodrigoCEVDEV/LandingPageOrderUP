@@ -1,7 +1,10 @@
 import { useState } from "react";
 import Icon from "./Icon.jsx";
+import CustomSelect from "./CustomSelect.jsx";
 import { PROJECT_TYPES, WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../data/content.js";
 import { useReveal } from "../hooks/useReveal.js";
+
+const PROJECT_TYPE_OPTIONS = [...PROJECT_TYPES, "Outro"];
 
 const initialState = {
   nome: "",
@@ -20,6 +23,11 @@ export default function ContactForm() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTipoChange = (tipo) => {
+    setForm((prev) => ({ ...prev, tipo }));
+    setFeedback(null);
   };
 
   const handleSubmit = (e) => {
@@ -127,16 +135,19 @@ export default function ContactForm() {
                 autoComplete="email"
               />
             </label>
-            <label className="field field--full">
-              <span>Tipo de projeto</span>
-              <select name="tipo" value={form.tipo} onChange={handleChange} required>
-                <option value="" disabled>Selecione uma opção</option>
-                {PROJECT_TYPES.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-                <option value="Outro">Outro</option>
-              </select>
-            </label>
+            <div className="field field--full">
+              <span id="tipo-label">Tipo de projeto</span>
+              <CustomSelect
+                id="tipo"
+                name="tipo"
+                value={form.tipo}
+                onChange={handleTipoChange}
+                options={PROJECT_TYPE_OPTIONS}
+                placeholder="Selecione uma opção"
+                labelledBy="tipo-label"
+                required
+              />
+            </div>
             <label className="field field--full">
               <span>Descrição da necessidade</span>
               <textarea

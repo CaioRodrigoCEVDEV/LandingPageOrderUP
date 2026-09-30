@@ -9,6 +9,16 @@ const icons = {
       strokeLinejoin="round"
     />
   ),
+  chevron: (
+    <path
+      d="m6 9 6 6 6-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  ),
   code: (
     <>
       <path
